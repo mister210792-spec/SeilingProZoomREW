@@ -988,10 +988,13 @@ const Drawing = {
         }
     },
 
-    completeAuth: function() {
-        document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('header-user').innerText = window.currentUser.name;
-        document.getElementById('header-plan').innerText = "План: " + window.currentUser.plan.toUpperCase();
+   completeAuth: function() {
+    // Эта функция теперь не нужна, весь код перенесен в index.html
+    // Оставляем для обратной совместимости
+    console.log("⚠️ completeAuth вызвана, но больше не используется");
+    this.setScaleFor5x5();
+    this.draw();
+},
         
         if(window.currentUser.plan === 'pro') {
             document.getElementById('header-plan').style.background = 'var(--gold)';
@@ -1164,4 +1167,5 @@ window.showDiagonals = Drawing.showDiagonals;
 window.showMeasures = Drawing.showMeasures;
 window.history = Drawing.history;
 window.selectedPointId = Drawing.selectedPointId;
+
 window.skipRoomTypeModal = Drawing.skipRoomTypeModal;
