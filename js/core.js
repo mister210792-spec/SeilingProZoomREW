@@ -333,13 +333,12 @@ function draw(isExport = false) {
                     if (r.points.length < 3) r.closed = false;
                     draw();
                 };
-            }
+                      }
             svg.appendChild(c);
         });
     }
     
     updateStats();
-    });
 }
 
 function drawSymbol(el, def) {
@@ -1218,3 +1217,4 @@ window.closeRectangleModal = closeRectangleModal;
 window.skipRoomTypeModal = skipRoomTypeModal;
 // Добавьте эту строку к существующему экспорту
 window.setRectSize = setRectSize;
+
