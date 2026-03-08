@@ -1217,3 +1217,4 @@ window.closeRectangleModal = closeRectangleModal;
 window.skipRoomTypeModal = skipRoomTypeModal;
 // Добавьте эту строку к существующему экспорту
 window.setRectSize = setRectSize;
+
