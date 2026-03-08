@@ -339,6 +339,7 @@ function draw(isExport = false) {
     }
     
     updateStats();
+    });
 }
 
 function drawSymbol(el, def) {
@@ -1217,4 +1218,5 @@ window.closeRectangleModal = closeRectangleModal;
 window.skipRoomTypeModal = skipRoomTypeModal;
 // Добавьте эту строку к существующему экспорту
 window.setRectSize = setRectSize;
+
 
