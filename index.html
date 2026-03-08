@@ -424,10 +424,8 @@
     console.log("✅ Firebase загружен");
 </script>
 
-<!-- Инициализация приложения (самый первый наш файл) -->
+<!-- Инициализация приложения -->
 <script src="js/init.js"></script>
-
-<!-- Затем все остальные модули -->
 <script src="js/auth.js"></script>
 <script src="js/elements.js"></script>
 <script src="js/prices.js"></script>
@@ -438,64 +436,101 @@
 
 <!-- Запуск приложения -->
 <script>
-    // Ждем загрузки DOM
+    // Ждем загрузки всех скриптов
     document.addEventListener('DOMContentLoaded', function() {
         console.log("🔄 DOM загружен, инициализация...");
         
+        // Инициализируем Firebase
         const firebaseReady = window.initializeFirebase();
         
         if (firebaseReady && window.auth) {
-            console.log("✅ Firebase сервисы инициализированы");
+            console.log("✅ Firebase сервисы готовы");
             
-            window.auth.onAuthStateChanged((user) => {
+            // Слушаем изменения состояния аутентификации
+            window.auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     console.log("👤 Пользователь найден:", user.email);
                     
-                    // Создаем базовый объект пользователя
-                    const userData = {
-                        name: user.displayName || user.email.split('@')[0],
-                        email: user.email,
-                        uid: user.uid,
-                        plan: 'free'
-                    };
-                    
-                    // Обновляем currentUser
-                    window.updateCurrentUser(userData);
-                    
-                    if (window.db) {
-                        window.db.collection('users').doc(user.uid).get()
-                            .then((doc) => {
-                                if (doc.exists) {
-                                    // Обновляем план из Firestore
-                                    userData.plan = doc.data().plan || 'free';
-                                    userData.subscription = doc.data().subscription;
-                                    
-                                    // Снова обновляем currentUser с планом
-                                    window.updateCurrentUser(userData);
-                                    
-                                    console.log("📊 План загружен:", userData.plan);
-                                }
-                                
-                                // Проверяем, является ли пользователь админом
-                                checkAdminAndShowPanel();
-                                
-                                if (typeof window.completeAuth === 'function') {
-                                    window.completeAuth();
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("❌ Ошибка загрузки плана:", error);
-                                if (typeof window.completeAuth === 'function') {
-                                    window.completeAuth();
-                                }
-                            });
-                    } else {
-                        if (typeof window.completeAuth === 'function') {
-                            window.completeAuth();
+                    try {
+                        // Получаем данные пользователя из Firestore
+                        const userDoc = await window.db.collection('users').doc(user.uid).get();
+                        
+                        let userData = {
+                            name: user.displayName || user.email.split('@')[0],
+                            email: user.email,
+                            uid: user.uid,
+                            plan: 'free'
+                        };
+                        
+                        if (userDoc.exists) {
+                            userData.plan = userDoc.data().plan || 'free';
+                            userData.subscription = userDoc.data().subscription;
                         }
+                        
+                        // Обновляем текущего пользователя
+                        window.updateCurrentUser(userData);
+                        console.log("📊 План загружен:", userData.plan);
+                        
+                        // Скрываем окно авторизации
+                        document.getElementById('auth-overlay').style.display = 'none';
+                        
+                        // Обновляем информацию в шапке
+                        document.getElementById('header-user').innerText = userData.name;
+                        document.getElementById('header-plan').innerText = "План: " + userData.plan.toUpperCase();
+                        
+                        if (userData.plan === 'pro') {
+                            document.getElementById('header-plan').style.background = 'var(--gold)';
+                            document.getElementById('header-plan').style.color = 'var(--dark)';
+                        }
+                        
+                        // Загружаем настройки
+                        window.loadAllSettings();
+                        
+                        // Загружаем кастомные элементы
+                        if (userData.uid && window.db) {
+                            await window.loadCustomElementsFromFirestore(userData.uid);
+                        }
+                        
+                        // Инициализируем селекторы
+                        window.initSelectors();
+                        
+                        // Проверяем план FREE (ограничение на 1 комнату)
+                        if (userData.plan === 'free' && window.Drawing.rooms.length > 1) {
+                            window.Drawing.rooms = window.Drawing.rooms.slice(0, 1);
+                            window.Drawing.renderTabs();
+                        } else if (window.Drawing.rooms.length === 0) {
+                            // Если нет комнат, показываем модальное окно выбора типа
+                            setTimeout(() => {
+                                window.Drawing.showRoomTypeModal();
+                            }, 500);
+                        }
+                        
+                        // Обновляем отображение плана
+                        window.Drawing.updatePlanDisplay();
+                        
+                        // Показываем админ-панель если нужно
+                        if (typeof window.Admin?.updateAdminPanelVisibility === 'function') {
+                            window.Admin.updateAdminPanelVisibility();
+                        }
+                        
+                        // Устанавливаем масштаб и отрисовываем
+                        window.Drawing.setScaleFor5x5();
+                        window.Drawing.draw();
+                        
+                        // Инициализируем мобильные обработчики
+                        if (typeof window.Mobile?.initMobileHandlers === 'function') {
+                            window.Mobile.initMobileHandlers();
+                        }
+                        
+                        console.log("✅ Приложение полностью загружено!");
+                        
+                    } catch (error) {
+                        console.error("❌ Ошибка при загрузке данных пользователя:", error);
+                        alert("Ошибка при загрузке данных. Пожалуйста, обновите страницу.");
                     }
+                    
                 } else {
-                    console.log("👤 Пользователь не авторизован");
+                    console.log("👤 Пользователь не авторизован, показываем экран входа");
                     document.getElementById('auth-overlay').style.display = 'flex';
                 }
             });
@@ -504,6 +539,7 @@
             alert("Ошибка подключения к серверу. Проверьте интернет и обновите страницу.");
         }
     });
+</script>;
     
     // Функция для проверки админа и показа панели
     function checkAdminAndShowPanel() {
@@ -614,4 +650,5 @@
     });
 </script>
 </body>
+
 </html>
