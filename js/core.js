@@ -1223,6 +1223,3 @@ window.closeElementDimensionsModal = closeElementDimensionsModal;
 window.applyElementDimensions = applyElementDimensions;
 window.calculateDistancesToWalls = calculateDistancesToWalls;
 window.getElementDisplayName = getElementDisplayName;
-
-
-
