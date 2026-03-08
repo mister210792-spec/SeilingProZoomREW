@@ -1217,9 +1217,3 @@ window.closeRectangleModal = closeRectangleModal;
 window.skipRoomTypeModal = skipRoomTypeModal;
 // Добавьте эту строку к существующему экспорту
 window.setRectSize = setRectSize;
-// ДОБАВЬТЕ В КОНЕЦ ФАЙЛА, ГДЕ УЖЕ ЕСТЬ ДРУГИЕ ЭКСПОРТЫ
-window.showElementDimensionsModal = showElementDimensionsModal;
-window.closeElementDimensionsModal = closeElementDimensionsModal;
-window.applyElementDimensions = applyElementDimensions;
-window.calculateDistancesToWalls = calculateDistancesToWalls;
-window.getElementDisplayName = getElementDisplayName;
